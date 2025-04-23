@@ -1,35 +1,22 @@
+/* app/globals.css - Complete Code */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
-
-html {
-  height: 100vh;
-}
-
-body {
-  height: 100vh;
-}
-
-
-
 @layer base {
+  /* Define CSS variables for light and dark modes */
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    /* Default Next.js foreground variable */
+    --foreground-rgb: 0, 0, 0;
+
+    /* Gradient colors for LIGHT mode - HIGH CONTRAST */
+    --gradient-start: #ffffff; /* White */
+    --gradient-end: #cccccc;   /* Medium-light gray */
+
+    /* Essential shadcn/ui variables (or similar UI library) for LIGHT mode */
+    /* Ensure these match your project's setup if you customized them */
+    --background: 0 0% 100%; /* Light background variable (used by bg-background) */
+    --foreground: 0 0% 3.9%; /* Light text variable (used by text-foreground) */
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
@@ -47,16 +34,23 @@ body {
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    /* Add --chart variables if you use them */
+    /* --chart-1: 12 76% 61%; ... */
   }
+
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
+    /* Default Next.js dark foreground variable */
+    --foreground-rgb: 255, 255, 255;
+
+    /* Gradient colors for DARK mode - HIGH CONTRAST */
+    --gradient-start: #4a4a4a; /* Medium-Dark Gray */
+    --gradient-end: #1c1c1c;   /* Very Dark Gray / Off-black */
+
+    /* Essential shadcn/ui variables (or similar UI library) for DARK mode */
+    /* Ensure these match your project's setup if you customized them */
+    --background: 0 0% 3.9%; /* Dark background variable */
+    --foreground: 0 0% 98%; /* Dark text variable */
     --card: 0 0% 3.9%;
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 3.9%;
@@ -74,21 +68,37 @@ body {
     --border: 0 0% 14.9%;
     --input: 0 0% 14.9%;
     --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    /* Add --chart variables if you use them */
+    /* --chart-1: 220 70% 50%; ... */
   }
-}
 
-
-
-@layer base {
+  /* Apply base styles */
   * {
-    @apply border-border;
+    @apply border-border; /* Keep this if needed (e.g., from shadcn/ui) */
   }
+
   body {
-    @apply bg-background text-foreground;
+    /* Apply the gradient background using the CSS variables */
+    background: linear-gradient(to bottom, var(--gradient-start), var(--gradient-end));
+    background-color: var(--gradient-start); /* Fallback color */
+
+    /* Fix the background so it doesn't scroll */
+    background-attachment: fixed;
+
+    /* Apply text color using the appropriate variable */
+    @apply text-foreground; /* Uses the --foreground variable */
+
+    /* Ensure body covers full height */
+    @apply min-h-screen; /* Tailwind class for min-height: 100vh */
+
+    /* Explicitly set base font size and line height */
+    font-size: 17px; /* Your desired base font size */
+    line-height: 1.6; /* Your desired line height */
   }
-}
+
+  /* Optional: Define default paragraph margins */
+  /* p {
+    @apply mb-4; /* Example bottom margin for paragraphs */
+  /* } */
+
+} /* End of @layer base */
