@@ -42,7 +42,7 @@ export default function AboutPage() {
         Welcome! You&rsquo;ve landed at the digital crossroads where technology meets creativity – a space documenting my personal expedition into the fascinating world of Web3. I&rsquo;m Elgo, and this blog chronicles my deep dive, particularly focusing on the groundbreaking potential of the <strong>Ethereum blockchain</strong> and my growing passion for <strong>AI-generated art</strong> brought to life as <strong>Non-Fungible Tokens (NFTs)</strong>.
       </p>
       <p className="mb-4 leading-relaxed">
-        What started as curiosity about blockchain technology quickly evolved into a captivating journey. I was drawn to the core ideas of Web3 – decentralization, transparency, and digital ownership. Ethereum, with its robust <strong>smart contract</strong> capabilities and vibrant ecosystem, became my primary focus for learning and experimentation.
+        What started as curiosity about blockchain technology quickly evolved into a captivating journey. I was drawn to the core ideas of Web3 – decentralization, transparency, and digital ownership. Ethereum, with its powerful smart contract capabilities and vibrant ecosystem, became my primary focus for learning and experimentation.
       </p>
       <p className="mb-4 leading-relaxed">
         Simultaneously, I found myself mesmerized by the incredible advancements in Artificial Intelligence... This intersection felt revolutionary... {/* Assuming no apostrophes here, check your actual text if error persists */}
