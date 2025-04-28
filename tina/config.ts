@@ -24,7 +24,11 @@ export default defineConfig({
 
   // Tell the generated client where to find your local GraphQL server:
   client: {
-    url: process.env.TINA_GRAPHQL_URL || "http://localhost:8889/graphql",
+    // Use the Next.js proxy in dev, and fall back to Tina Cloud in prod
+    url:
+      process.env.NODE_ENV === "development"
+        ? "/api/graphql"
+        : process.env.TINA_GRAPHQL_URL!,
   },
 
   build: {
