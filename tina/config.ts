@@ -7,20 +7,11 @@ const branch =
   process.env.HEAD ||
   "main";
 
-// Ensure required env vars are set
-if (!process.env.TINA_CLIENT_ID) {
-  throw new Error("Missing TINA_CLIENT_ID environment variable");
-}
-if (!process.env.TINA_TOKEN) {
-  throw new Error("Missing TINA_TOKEN environment variable");
-}
-
 export default defineConfig({
   branch,
 
-  // These values are now sourced from environment variables
-  clientId: process.env.TINA_CLIENT_ID,
-  token: process.env.TINA_TOKEN,
+  clientId: "43d7eb89-81d4-46c3-b542-319fb88f77a5",
+  token: "b9aa367fd90c792a3b6d8e010d011f78f20b1575",
 
   // Tell the generated client where to find your local GraphQL server:
   client: {
