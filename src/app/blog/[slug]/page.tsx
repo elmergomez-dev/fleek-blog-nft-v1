@@ -1,182 +1,199 @@
-// src/app/blog/[slug]/page.tsx
+// src/app/blog/[slug]/page.tsx (Updated for Next.js 15 Async Props)
 
-import React from 'react'; // Technically optional in newer Next.js, but good practice
+import React from 'react';
 import Image from 'next/image';
-import { TinaMarkdown, TinaMarkdownContent } from 'tinacms/dist/rich-text';
 import type { Metadata, ResolvingMetadata } from 'next';
+import { notFound } from 'next/navigation'; // Import for handling 404
+import fs from 'fs'; // Node.js file system module
+import path from 'path'; // Node.js path module
+import matter from 'gray-matter'; // Library to parse frontmatter
+import { remark } from 'remark'; // Core Markdown processor
+import html from 'remark-html'; // Plugin to convert Markdown to HTML
 
-// Adjust the import path based on your project structure
-// It should point to the Tina client generated in tina/__generated__/client
-import { client } from '../../../../tina/__generated__/client';
-
-// --- Type Definition for Page Props ---
+// --- Type Definitions (Updated for Next.js 15) ---
 type Props = {
-  params: { slug: string };
-  // searchParams: { [key: string]: string | string[] | undefined }; // Uncomment if using searchParams
+  params: Promise<{ slug: string }>; // <-- Updated: params is a Promise
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>; // <-- Updated: searchParams is also a Promise
 };
 
-// --- Metadata Generation (for SEO) ---
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata // Optional access to parent metadata
-): Promise<Metadata> {
+// Define the expected structure of your Markdown frontmatter
+interface PostFrontmatter {
+  title: string;
+  date: string; // Keep as string initially, parse later
+  featuredImage?: string;
+  excerpt?: string;
+  // Add any other fields you use in your frontmatter
+}
+
+interface PostData {
+  slug: string;
+  frontmatter: PostFrontmatter;
+  contentHtml: string; // The processed HTML body
+}
+
+// --- Helper Functions ---
+
+// Define the path to your posts directory
+const postsDirectory = path.join(process.cwd(), 'content/posts');
+
+// Function to get data for a single post (remains the same)
+async function getPostData(slug: string): Promise<PostData | null> {
+  const fullPath = path.join(postsDirectory, `${slug}.md`);
   try {
-    const slug = params.slug;
-    // Fetch post data needed for metadata
-    // Ensure your Tina query 'post' includes title, excerpt (if you add it), featuredImage
-    const result = await client.queries.post({
-      relativePath: `${slug}.md`,
-    });
-    const post = result.data.post;
-
-    // Handle post not found
-    if (!post) {
-      return {
-        title: 'Post Not Found',
-        description: 'This blog post could not be located.',
-      };
+    if (!fs.existsSync(fullPath)) {
+      console.warn(`Markdown file not found for slug: ${slug}`);
+      return null; // Return null if file doesn't exist
     }
 
-    // --- Construct Title (Keep under ~60 characters) ---
-    const pageTitle = `${post.title || 'Blog Post'} | My Web3 Journey`;
+    const fileContents = fs.readFileSync(fullPath, 'utf8');
 
-    // --- Construct Description (Keep ~150-160 characters) ---
-    // Ideal: Add an 'excerpt' field (type: string) to your TinaCMS 'post' schema
-    //        in tina/config.ts and fill it out for each post.
-    let pageDescription = post.excerpt;
-    if (!pageDescription) {
-      // Fallback if no excerpt field exists - customize this default message
-      pageDescription = `Read the post titled "${post.title}" on my Web3 journey, covering AI art, NFTs, development challenges, and more.`;
-    }
-    // Ensure length constraint
-    pageDescription = pageDescription.substring(0, 160);
+    // Use gray-matter to parse the post metadata section
+    const matterResult = matter(fileContents);
 
-    // --- Optional: Open Graph / Twitter Card data ---
-    // *** ACTION NEEDED: Add a default OG image at /public/default-og-image.png (or similar path) ***
-    const ogImageUrl = post.featuredImage || '/default-og-image.png';
+    // Use remark to convert markdown into HTML string
+    const processedContent = await remark()
+      .use(html) // Use the remark-html plugin
+      .process(matterResult.content);
+    const contentHtml = processedContent.toString();
 
+    // Combine the data with the slug and contentHtml
     return {
+      slug,
+      frontmatter: matterResult.data as PostFrontmatter, // Assert type
+      contentHtml,
+    };
+  } catch (error) {
+    console.error(`Error reading or parsing markdown file for slug ${slug}:`, error);
+    return null; // Return null on error
+  }
+}
+
+// --- Metadata Generation (Updated for Next.js 15) ---
+export async function generateMetadata(
+  { params }: Props, // Props type now correctly includes Promise
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  // Await the params Promise to get the actual object
+  const awaitedParams = await params;
+  const slug = awaitedParams.slug; // Use the resolved slug
+
+  // Fetch data using the resolved slug
+  const postData = await getPostData(slug);
+
+  if (!postData) {
+    return { title: 'Post Not Found' };
+  }
+
+  const { frontmatter } = postData;
+
+  const pageTitle = `${frontmatter.title || 'Blog Post'} | My Web3 Journey`;
+  let pageDescription = frontmatter.excerpt;
+  if (!pageDescription) {
+    pageDescription = `Read the post titled "${frontmatter.title}" on my Web3 journey...`; // Customize default
+  }
+  pageDescription = pageDescription.substring(0, 160);
+  const ogImageUrl = frontmatter.featuredImage || '/default-og-image.jpg'; // Add default OG image
+
+  return {
+    title: pageTitle,
+    description: pageDescription,
+    openGraph: {
       title: pageTitle,
       description: pageDescription,
-      // Recommended for social sharing:
-      openGraph: {
-        title: pageTitle,
-        description: pageDescription,
-        images: ogImageUrl ? [{ url: ogImageUrl }] : [], // Uses featuredImage or default
-        type: 'article',
-        url: `/blog/${slug}`, // Optional: Sets the canonical URL for the post
-      },
-      twitter: { // Optional: Specific card type for Twitter
-        card: 'summary_large_image',
-        title: pageTitle,
-        description: pageDescription,
-        images: ogImageUrl ? [ogImageUrl] : [],
-      },
-      // Optional: Add relevant keywords
-      // keywords: ['Next.js', 'Fleek', 'Web3', 'Blog Setup', 'Troubleshooting', 'AI Art', 'NFT'],
-    };
-
-  } catch (error) {
-    console.error(`Error generating metadata for slug ${params.slug}:`, error);
-    // Return minimal metadata on error
-    return {
-      title: "Error Generating Metadata",
-      description: "Could not generate metadata for this post.",
-    };
-  }
+      images: ogImageUrl ? [{ url: ogImageUrl }] : [],
+      type: 'article',
+      url: `/blog/${slug}`, // Use the resolved slug here too
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: pageTitle,
+      description: pageDescription,
+      images: ogImageUrl ? [ogImageUrl] : [],
+    },
+  };
 }
 
-// --- Static Param Generation (for Static Site Generation) ---
+// --- Static Param Generation (remains the same) ---
 export async function generateStaticParams() {
   try {
-    const pages = await client.queries.postConnection(); // Assumes query name is 'postConnection'
-    const paths = pages.data?.postConnection?.edges?.map((edge) => {
-      // Added checks for null/undefined intermediate properties
-      if (!edge?.node?._sys?.filename) {
-        console.warn("Skipping path generation for edge with missing node or filename:", edge);
-        return null;
-      }
-      return {
-        slug: edge.node._sys.filename.replace(/\.md$/, ''),
-      };
-    }).filter((path): path is { slug: string } => path !== null); // Type guard for filtering nulls
-
-    return paths || [];
+    const fileNames = fs.readdirSync(postsDirectory);
+    // Filter for actual markdown files
+    const mdFiles = fileNames.filter((fileName) => fileName.endsWith('.md'));
+    // Create slugs
+    const paths = mdFiles.map((fileName) => ({
+      slug: fileName.replace(/\.md$/, ''),
+    }));
+    return paths;
   } catch (error) {
-      console.error("Error generating static params:", error);
-      return []; // Return empty array on error
+    console.error("Error reading posts directory for static params:", error);
+    return [];
   }
 }
 
-// --- Page Component ---
-export default async function PostPage({ params }: Props) {
-  try {
-    // Fetch full post data using the slug
-    const result = await client.queries.post({
-      relativePath: `${params.slug}.md`,
-    });
-    const post = result.data.post;
+// --- Page Component (Updated for Next.js 15) ---
+export default async function PostPage({ params, searchParams }: Props) { // Destructure searchParams too
+  // Await the params Promise to get the actual object
+  const awaitedParams = await params;
+  const slug = awaitedParams.slug; // Use the resolved slug
 
-    // Handle cases where the post might not be found
-    if (!post) {
-      // Consider using Next.js notFound() function here for proper 404 handling in production
-      // import { notFound } from 'next/navigation';
-      // notFound();
-      return <div>Post not found!</div>; // Fallback display
-    }
+  // If you ever needed searchParams:
+  // const awaitedSearchParams = await searchParams;
 
-    // Safely format the date
-    let postDate = 'No date available';
-    if (post.date) {
-        try {
-            // Use specific locale and options for consistent formatting
-            postDate = new Date(post.date).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                timeZone: 'UTC', // Specify timezone if date string doesn't include it
-            });
-        } catch (dateError) {
-            console.error("Error formatting date:", dateError);
-            // Keep 'No date available' or handle differently
-        }
-    }
+  // Fetch data using the resolved slug
+  const postData = await getPostData(slug);
 
-    return (
-      // Main article container with Tailwind classes
-      <article className="max-w-3xl mx-auto my-8 px-4"> {/* Centered, padding, margin */}
-
-        {/* Post Title */}
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">{post.title || 'Untitled Post'}</h1>
-        {/* Post Date */}
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{postDate}</p>
-
-        {/* Featured Image */}
-        {post.featuredImage && (
-          <div className="relative w-full aspect-video mb-8 rounded-lg overflow-hidden shadow-lg">
-            <Image
-              src={post.featuredImage}
-              alt={post.title || 'Featured Image'} // Use post title for alt text
-              fill
-              style={{ objectFit: 'cover' }} // Cover the area
-              priority // Prioritize loading for LCP
-              sizes="(max-width: 768px) 100vw, 800px" // Provide sizes hint based on max-w-3xl
-            />
-          </div>
-        )}
-
-        {/* Main Body Content - Rendered using TinaMarkdown */}
-        {/* Added prose styles for Markdown formatting */}
-        <div className="prose prose-lg dark:prose-invert max-w-none">
-          {/* Removed the components prop as discussed */}
-          <TinaMarkdown content={post.body as TinaMarkdownContent} />
-        </div>
-
-      </article>
-    );
-  } catch (error) {
-      console.error(`Error fetching post for slug ${params.slug}:`, error);
-      // Render a user-friendly error message or use Next.js error handling
-      return <div className="text-center my-10">Error loading post. Please try again later.</div>;
+  // Handle post not found using Next.js notFound()
+  if (!postData) {
+    notFound();
   }
+
+  const { frontmatter, contentHtml } = postData;
+
+  // Safely format the date (remains the same)
+  let postDate = 'No date available';
+  if (frontmatter.date) {
+      try {
+          postDate = new Date(frontmatter.date).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+              timeZone: 'UTC', // Assume UTC if timezone not specified in frontmatter
+          });
+      } catch (dateError) {
+          console.error("Error formatting date:", dateError);
+      }
+  }
+
+  return (
+    // Main article container
+    <article className="max-w-3xl mx-auto my-8 px-4">
+
+      {/* Post Title */}
+      <h1 className="text-3xl md:text-4xl font-bold mb-2">{frontmatter.title || 'Untitled Post'}</h1>
+      {/* Post Date */}
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{postDate}</p>
+
+      {/* Featured Image */}
+      {frontmatter.featuredImage && (
+        <div className="relative w-full aspect-video mb-8 rounded-lg overflow-hidden shadow-lg">
+          <Image
+            src={frontmatter.featuredImage}
+            alt={frontmatter.title || 'Featured Image'}
+            fill
+            style={{ objectFit: 'cover' }}
+            priority
+            sizes="(max-width: 768px) 100vw, 800px"
+          />
+        </div>
+      )}
+
+      {/* Main Body Content - Rendered from HTML string */}
+      {/* Apply prose styles for Markdown formatting */}
+      <div
+        className="prose prose-lg dark:prose-invert max-w-none"
+        dangerouslySetInnerHTML={{ __html: contentHtml }} // <-- Render HTML here
+      />
+
+    </article>
+  );
 }

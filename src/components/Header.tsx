@@ -12,12 +12,17 @@ export default function Header() {
           {/* Apply Tailwind classes directly to ul/li/a or use CSS Modules */}
           <ul className="flex items-center gap-6 md:gap-8"> {/* Adjusted gap */}
             <li>
+              <Link href="/" className="text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                Home
+              </Link>
+            </li>
+            <li>
               <Link href="/about" className="text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                 About
               </Link>
             </li>
             <li>
-              <Link href="/" className="text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              <Link href="/blog" className="text-lg font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                 Blog
               </Link>
             </li>
