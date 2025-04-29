@@ -3,6 +3,38 @@
 @tailwind components;
 @tailwind utilities;
 
+/* --- Custom List Styles (Corrected Nested Selector) --- */
+
+/* Keep this rule for spacing between paragraphs (divs) in one item */
+.prose li > div + div,
+.prose-lg li > div + div { /* Match your prose size */
+    margin-top: 1em; /* Adjust spacing as needed */
+}
+
+/* CORRECTED: Style nested UNORDERED lists to use square bullets */
+/* This targets any UL inside another UL or OL within a .prose/-lg container */
+.prose ul ul,
+.prose ol ul,
+.prose-lg ul ul, /* Add variants matching your usage */
+.prose-lg ol ul {
+    list-style-type: square;
+    /* Tailwind prose should handle indentation, but you can override if needed */
+    /* padding-left: 1.25em; */
+    /* margin-top: 0.5em; */
+}
+
+/* REMOVE THE INCORRECT RULE (if present) */
+/* li > div > ul { list-style-type: square; ... } */
+
+
+/* Keep marker sizing rule (targets all li markers within prose) */
+.prose li::marker,
+.prose-lg li::marker { /* Match your prose size */
+    font-size: 1.5em; /* Adjust size */
+}
+
+/* --- End Custom List Styles --- */
+
 @layer base {
   /* Define CSS variables for light and dark modes */
   :root {
