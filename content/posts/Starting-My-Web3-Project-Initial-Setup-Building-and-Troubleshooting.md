@@ -28,7 +28,7 @@ Getting started was familiar territory: create-next-app spun up the boilerplate.
 *Initial homepage in light mode*
 
 ![](/images/initial-homepage-in-dark-mode.jpg)
-*Initial homapage in dark mode*
+*Initial homepage in dark mode*
 
 Next up, a basic structure: a simple header with navigation links for "Home" and "About" initially (using Next.js's Link component for smooth client-side navigation) and setting up the global styles. I even managed to get a nice, subtle gray gradient background working using Tailwind CSS configurations in globals.css. I then replaced the "Home" link with "Blog," aptly serving as the "homepage," finally settling on "About," "Blog," and "Gallery" as the main menu. So far, so good!
 ![](/images/my-first-blog-post.jpg)
@@ -52,6 +52,6 @@ After resolving those issues, seeing the build succeed and the deployment comple
 
 This initial phase has been filled with excitement, learning, and the inevitable debugging that comes with development. It's humbling to be a novice again in certain areas, but thrilling to apply existing skills in a new context.
 
-Next up, I'll be diving deeper into actually implementing the NFT gallery logic (now that the build errors are sorted!). And, crucially, starting my journey into generating AI art to populate it.
+Next up, I'll be diving deeper into actually implementing the NFT gallery logic (now that the build errors are sorted!). And, crucially, starting my journey into generating AI art to populate it. Alongside that, of course, I still need to publish one or two posts related to this one, sharing my experience building the dark mode toggle and (hopefully) successfully fixing the ENS domain linking with Fleek.
 
 Thanks for joining me at the very beginning! Stick around if you're curious about AI art, NFTs, Ethereum, or just enjoy following along with someone learning publicly and probably making a few more mistakes along the way. Comments and shared experiences are always welcome!

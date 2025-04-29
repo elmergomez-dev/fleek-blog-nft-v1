@@ -36,7 +36,7 @@ async function getNftsForOwner(ownerAddress: string): Promise<NftType[]> {
           const tokenId = nft.tokenId;
           if (!contractAddress || !tokenId) { console.warn("Skipping NFT due to missing contract address or token ID:", nft); return null; }
           return { id: `${contractAddress}/${tokenId}`, name: nft.name || `#${tokenId}`, imageUrl: getImageUrl(nft.image), contractAddress: contractAddress, tokenId: tokenId, description: nft.description || '', collectionName: nft.contract?.name || nft.contract?.openSeaMetadata?.collectionName || '', tokenType: nft.tokenType, openseaUrl: `https://opensea.io/assets/ethereum/${contractAddress}/${tokenId}` };
-      }).filter((nft): nft is NftType => nft !== null && !!nft.imageUrl);
+        }).filter((nft: NftType | null): nft is NftType => nft !== null && !!nft.imageUrl);
       console.log(`Found ${nfts.length} NFTs with images for ${ownerAddress}`);
       return nfts;
     } catch (error) { console.error("Error caught in getNftsForOwner fetch:", error); return []; }
