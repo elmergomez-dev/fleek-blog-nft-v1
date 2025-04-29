@@ -1,19 +1,35 @@
 import { defineConfig } from "tinacms";
 
-// Your hosting provider likely exposes this as an environment variable
+// Determine the branch (for HEAD or CI environments)
 const branch =
   process.env.GITHUB_BRANCH ||
   process.env.VERCEL_GIT_COMMIT_REF ||
   process.env.HEAD ||
   "main";
 
+// Ensure required env vars are set
+if (!process.env.TINA_CLIENT_ID) {
+  throw new Error("Missing TINA_CLIENT_ID environment variable");
+}
+if (!process.env.TINA_TOKEN) {
+  throw new Error("Missing TINA_TOKEN environment variable");
+}
+
 export default defineConfig({
   branch,
 
-  // Get this from tina.io
-  clientId: "43d7eb89-81d4-46c3-b542-319fb88f77a5",
-  // Get this from tina.io
-  token: "b9aa367fd90c792a3b6d8e010d011f78f20b1575",
+  // These values are now sourced from environment variables
+  clientId: process.env.TINA_CLIENT_ID,
+  token: process.env.TINA_TOKEN,
+
+  // Tell the generated client where to find your local GraphQL server:
+  client: {
+    // Use the Next.js proxy in dev, and fall back to Tina Cloud in prod
+    url:
+      process.env.NODE_ENV === "development"
+        ? "/api/graphql"
+        : process.env.TINA_GRAPHQL_URL!,
+  },
 
   build: {
     outputFolder: "admin",
@@ -25,7 +41,6 @@ export default defineConfig({
       publicFolder: "public",
     },
   },
-  // See docs on content modeling for more info on how to setup new content models: https://tina.io/docs/schema/
   schema: {
     collections: [
       {
@@ -45,7 +60,7 @@ export default defineConfig({
             name: "date",
             label: "Date",
             required: true,
-          },          
+          },
           {
             type: "rich-text",
             name: "body",
@@ -56,13 +71,11 @@ export default defineConfig({
             type: "string",
             name: "excerpt",
             label: "Excerpt / Summary",
-            // required: false, // Optional
           },
           {
             type: "image",
             name: "featuredImage",
             label: "Featured Image",
-            // required: false, // Optional
           },
         ],
       },
